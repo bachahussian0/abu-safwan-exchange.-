@@ -1,0 +1,318 @@
+
+```html
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>کرنسی ٹریکر - سعودی ریال بمقابلہ پاکستانی روپے</title>
+ <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+ <style>
+ * {
+ box-sizing: border-box;
+ font-family: 'Noto Nastaliq Urdu', sans-serif;
+ margin: 0;
+ padding: 0;
+ }
+ body {
+ background-color: #f0f4f8;
+ padding: 20px;
+ }
+ .login-screen {
+ max-width: 420px;
+ margin: 60px auto;
+ background: white;
+ padding: 35px;
+ border-radius: 12px;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+ }
+ .dashboard {
+ max-width: 1250px;
+ margin: 0 auto;
+ background: white;
+ border-radius: 12px;
+ padding: 30px;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+ }
+ .hidden {
+ display: none !important;
+ }
+ input, button, select {
+ width: 100%;
+ padding: 13px;
+ margin: 8px 0;
+ border: 1px solid #ddd;
+ border-radius: 6px;
+ font-size: 16px;
+ }
+ button {
+ background-color: #2563eb;
+ color: white;
+ border: none;
+ cursor: pointer;
+ transition: 0.3s;
+ }
+ button:hover {
+ background-color: #1d4ed8;
+ }
+ .transaction-form {
+ background: #f8fafc;
+ padding: 25px;
+ border-radius: 10px;
+ margin-bottom: 30px;
+ }
+ .split-section {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 25px;
+ margin: 20px 0;
+ }
+ .customer-section, .receiver-section {
+ background: #eff6ff;
+ padding: 20px;
+ border-radius: 8px;
+ }
+ .balance-box {
+ background: white;
+ padding: 12px;
+ border-radius: 6px;
+ margin: 10px 0;
+ display: flex;
+ justify-content: space-between;
+ }
+ .received {
+ color: #10b981;
+ font-weight: bold;
+ }
+ .remaining {
+ color: #f59e0b;
+ font-weight: bold;
+ }
+ .transaction-table {
+ width: 100%;
+ border-collapse: collapse;
+ margin-top: 25px;
+ }
+ .transaction-table th, .transaction-table td {
+ border: 1px solid #ddd;
+ padding: 12px;
+ text-align: right;
+ }
+ .transaction-table th {
+ background-color: #f8fafc;
+ font-weight: bold;
+ }
+ .search-bar {
+ display: flex;
+ gap: 10px;
+ margin-bottom: 20px;
+ }
+ .status-pending {
+ color: #f59e0b;
+ font-weight: bold;
+ }
+ .status-complete {
+ color: #10b981;
+ font-weight: bold;
+ }
+ </style>
+</head>
+<body>
+ <!-- لاگ ان اسکرین -->
+ <div class="login-screen" id="loginScreen">
+ <h2 style="text-align: center; margin-bottom: 25px; color: #1e40af;">کرنسی ٹریکر لاگ ان</h2>
+ <input type="password" id="loginPass" placeholder="ایڈمن پاس ورڈ درج کریں">
+ <button onclick="login()">لاگ ان کریں</button>
+ <p id="loginError" style="color: red; text-align: center; display: none;">پاس ورڈ غلط ہے</p>
+ </div>
+
+ <!-- مین ڈیش بورڈ -->
+ <div class="dashboard hidden" id="dashboard">
+ <h1 style="text-align: center; color: #1e40af; margin-bottom: 30px;">کرنسی ایکسچینج ٹریکر</h1>
+
+ <!-- نئی ٹرانزیکشن فارم -->
+ <div class="transaction-form">
+ <h3 style="margin-bottom: 20px;">نئی ٹرانزیکشن شامل کریں</h3>
+ <div class="split-section">
+ <!-- کسٹمر سیکشن (ریال دینے والا) -->
+ <div class="customer-section">
+ <h4 style="color: #1e40af; margin-bottom: 15px;">کسٹمر (ریال دینے والا)</h4>
+ <input type="text" id="customerName" placeholder="کسٹمر کا نام">
+ <input type="number" id="totalRiyal" placeholder="کل ریال کی رقم">
+ <div class="balance-box">
+ <span>حصول شدہ ریال:</span>
+ <span class="received" id="customerReceived">0</span>
+ </div>
+ <div class="balance-box">
+ <span>بقایا ریال:</span>
+ <span class="remaining" id="customerRemaining">0</span>
+ </div>
+ <button onclick="addCustomerReceived()" style="background-color: #10b981;">حصول شدہ رقم شامل کریں</button>
+ </div>
+
+ <!-- وصول کنندہ سیکشن (روپے وصول کرنے والا) -->
+ <div class="receiver-section">
+ <h4 style="color: #1e40af; margin-bottom: 15px;">وصول کنندہ (روپے وصول کرنے والا)</h4>
+ <input type="text" id="receiverName" placeholder="وصول کنندہ کا نام">
+ <input type="number" id="totalPkr" placeholder="کل روپے کی رقم">
+ <div class="balance-box">
+ <span>بھیجے گئے روپے:</span>
+ <span class="received" id="receiverSent">0</span>
+ </div>
+ <div class="balance-box">
+ <span>بقایا روپے:</span>
+ <span class="remaining" id="receiverRemaining">0</span>
+ </div>
+ <button onclick="addReceiverSent()" style="background-color: #f59e0b;">بھیجی گئی رقم شامل کریں</button>
+ </div>
+ </div>
+ <button onclick="saveTransaction()" style="margin-top: 15px; width: auto; padding: 12px 30px;">ٹرانزیکشن محفوظ کریں</button>
+ </div>
+
+ <!-- سرچ بار -->
+ <div class="search-bar">
+ <input type="text" id="searchField" placeholder="کسٹمر یا وصول کنندہ کا نام سرچ کریں" oninput="filterTransactions()">
+ <button onclick="exportData()">ڈیٹا ایکسپورٹ کریں</button>
+ </div>
+
+ <!-- ٹرانزیکشن ٹیبل -->
+ <table class="transaction-table">
+ <thead>
+ <tr>
+ <th>تاریخ اور وقت</th>
+ <th>کسٹمر کا نام</th>
+ <th>کل ریال</th>
+ <th>حصول شدہ ریال</th>
+ <th>بقایا ریال</th>
+ <th>وصول کنندہ کا نام</th>
+ <th>کل روپے</th>
+ <th>بھیجے گئے روپے</th>
+ <th>بقایا روپے</th>
+ <th>اسٹیٹس</th>
+ <th>کارروائی</th>
+ </tr>
+ </thead>
+ <tbody id="transactionTableBody"></tbody>
+ </table>
+ </div>
+
+ <script>
+ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+ let currentReceivedRiyal = 0;
+ let currentSentPkr = 0;
+ const ADMIN_PASS = "admin123";
+
+ function login() {
+ const pass = document.getElementById('loginPass').value;
+ if(pass === ADMIN_PASS) {
+ document.getElementById('loginScreen').classList.add('hidden');
+ document.getElementById('dashboard').classList.remove('hidden');
+ renderTransactions();
+ } else {
+ document.getElementById('loginError').style.display = 'block';
+ }
+ }
+
+ function addCustomerReceived() {
+ const amount = prompt('حصول شدہ ریال کی رقم درج کریں:');
+ if(amount && !isNaN(amount)) {
+ currentReceivedRiyal += parseFloat(amount);
+ const total = parseFloat(document.getElementById('totalRiyal').value) || 0;
+ document.getElementById('customerReceived').innerText = currentReceivedRiyal;
+ document.getElementById('customerRemaining').innerText = total - currentReceivedRiyal;
+ }
+ }
+
+ function addReceiverSent() {
+ const amount = prompt('بھیجی گئی روپے کی رقم درج کریں:');
+ if(amount && !isNaN(amount)) {
+ currentSentPkr += parseFloat(amount);
+ const total = parseFloat(document.getElementById('totalPkr').value) || 0;
+ document.getElementById('receiverSent').innerText = currentSentPkr;
+ document.getElementById('receiverRemaining').innerText = total - currentSentPkr;
+ }
+ }
+
+ function saveTransaction() {
+ const transaction = {
+ id: Date.now(),
+ timestamp: new Date().toLocaleString('ur-PK'),
+ customerName: document.getElementById('customerName').value,
+ totalRiyal: parseFloat(document.getElementById('totalRiyal').value),
+ receivedRiyal: currentReceivedRiyal,
+ remainingRiyal: parseFloat(document.getElementById('totalRiyal').value) - currentReceivedRiyal,
+ receiverName: document.getElementById('receiverName').value,
+ totalPkr: parseFloat(document.getElementById('totalPkr').value),
+ sentPkr: currentSentPkr,
+ remainingPkr: parseFloat(document.getElementById('totalPkr').value) - currentSentPkr,
+ status: (parseFloat(document.getElementById('totalRiyal').value) === currentReceivedRiyal && parseFloat(document.getElementById('totalPkr').value) === currentSentPkr) ? 'مکمل' : 'زیر التواء'
+ };
+ transactions.push(transaction);
+ localStorage.setItem('transactions', JSON.stringify(transactions));
+ resetForm();
+ renderTransactions();
+ }
+
+ function renderTransactions(filter = '') {
+ const tbody = document.getElementById('transactionTableBody');
+ tbody.innerHTML = '';
+ transactions.filter(t => t.customerName.includes(filter) || t.receiverName.includes(filter)).forEach(t => {
+ const row = document.createElement('tr');
+ row.innerHTML = `
+ <td>${t.timestamp}</td>
+ <td>${t.customerName}</td>
+ <td>${t.totalRiyal}</td>
+ <td class="received">${t.receivedRiyal}</td>
+ <td class="remaining">${t.remainingRiyal}</td>
+ <td>${t.receiverName}</td>
+ <td>${t.totalPkr}</td>
+ <td class="received">${t.sentPkr}</td>
+ <td class="remaining">${t.remainingPkr}</td>
+ <td class="${t.status === 'مکمل' ? 'status-complete' : 'status-pending'}">${t.status}</td>
+ <td>
+ <button onclick="deleteTransaction(${t.id})" style="background-color: #ef4444; padding: 8px; font-size: 14px;">ڈیلیٹ</button>
+ </td>
+ `;
+ tbody.appendChild(row);
+ });
+ }
+
+ function filterTransactions() {
+ const search = document.getElementById('searchField').value;
+ renderTransactions(search);
+ }
+
+ function deleteTransaction(id) {
+ if(confirm('کیا آپ واقعی اس ٹرانزیکشن کو ڈیلیٹ کرنا چاہتے ہیں؟')) {
+ transactions = transactions.filter(t => t.id !== id);
+ localStorage.setItem('transactions', JSON.stringify(transactions));
+ renderTransactions();
+ }
+ }
+
+ function resetForm() {
+ document.getElementById('customerName').value = '';
+ document.getElementById('totalRiyal').value = '';
+ document.getElementById('receiverName').value = '';
+ document.getElementById('totalPkr').value = '';
+ currentReceivedRiyal = 0;
+ currentSentPkr = 0;
+ document.getElementById('customerReceived').innerText = '0';
+ document.getElementById('customerRemaining').innerText = '0';
+ document.getElementById('receiverSent').innerText = '0';
+ document.getElementById('receiverRemaining').innerText = '0';
+ }
+
+ function exportData() {
+ const csv = "ٹائم سٹیمپ,کسٹمر,کل ریال,حصول ریال,بقایا ریال,وصول کنندہ,کل روپے,بھیجے روپے,بقایا روپے,اسٹیٹس\n" + 
+ transactions.map(t => `${t.timestamp},${t.customerName},${t.totalRiyal},${t.receivedRiyal},${t.remainingRiyal},${t.receiverName},${t.totalPkr},${t.sentPkr},${t.remainingPkr},${t.status}`).join('\n');
+ const blob = new Blob([csv], {type: 'text/csv'});
+ const url = window.URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = `currency-transactions-${new Date().toLocaleDateString()}.csv`;
+ a.click();
+ }
+ </script>
+</body>
+</html>
