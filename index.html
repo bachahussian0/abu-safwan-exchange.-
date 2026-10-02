@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ابو صفوان کرنسی ایکسچینج - فائنل</title>
+<style>
+:root{--navy:#062a52;--blue:#0b67d1;--green:#10a85a;--gold:#f5b82e;--red:#ef4444;--bg:#eef5fb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#12243a;font-family:Tahoma,Arial}
+header{background:linear-gradient(120deg,#031d3b,#0b4c88);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:20}
+.head{max-width:1250px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.layout{max-width:1250px;margin:16px auto;display:grid;grid-template-columns:1fr 240px;gap:16px;padding:0 10px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 3px 14px #1231}
+.side{background:#062a52;color:#fff;border-radius:18px;padding:14px;height:max-content;position:sticky;top:80px}
+.side button{display:block;width:100%;border:0;background:transparent;color:#fff;text-align:right;padding:12px;border-radius:10px;margin:3px 0;cursor:pointer}.side button:hover{background:#0b67d1}
+.rates{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.ratebox{border:1px solid #dce8f5;border-radius:12px;padding:10px;background:#fbfdff;text-align:center}
+.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.row{display:flex;gap:10px}.row>*{flex:1}
+label{display:block;font-size:12px;font-weight:bold;color:#475569;margin:7px 0 4px}
+input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font-size:14px}
+.btn{border:0;border-radius:9px;padding:11px 14px;font-weight:bold;cursor:pointer}.primary{background:var(--green);color:#fff}.blue{background:var(--blue);color:#fff}.danger{background:var(--red);color:#fff}.gray{background:#e2e8f0}.gold{background:var(--gold)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:850px}.tbl th{background:var(--navy);color:#fff}.tbl th,.tbl td{border:1px solid #dbe3ec;padding:7px;text-align:center}
+.lock{position:fixed;inset:0;background:#031d3b;z-index:999;display:flex;align-items:center;justify-content:center}.lockbox{background:#fff;padding:22px;border-radius:18px;width:92%;max-width:380px;text-align:center}
+#toast{position:fixed;bottom:20px;left:20px;background:#12243a;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:1000}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.rates{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media print{.no-print,#newCard,#codeCard{display:none!important}}
+</style>
+</head>
+<body>
+
+<div class="lock" id="lock">
+  <div class="lockbox">
+    <h2>🔐 ابو صفوان</h2>
+    <div id="loginNormal">
+      <p>مالک لاگ ان</p>
+      <input id="loginUser" placeholder="یوزر نام" value="admin">
+      <input id="pw" type="password" placeholder="پاس ورڈ" value="bacha0968023">
+      <button class="btn primary" style="width:100%;margin-top:10px" onclick="unlock()">داخل ہوں</button>
+      <hr>
+      <button class="btn blue" style="width:100%" onclick="showCodeLogin()">🔑 کوڈ سے داخلہ (مہمان)</button>
+    </div>
+    <div id="loginCode" style="display:none">
+      <p>مہمان کوڈ لکھیں</p>
+      <input id="accessCodeInput" placeholder="123456" style="text-align:center;font-size:22px;letter-spacing:4px">
+      <button class="btn primary" style="width:100%;margin-top:10px" onclick="loginWithCode()">کوڈ سے لاگ ان</button>
+      <button class="btn gray" style="width:100%;margin-top:6px" onclick="showNormalLogin()">واپس</button>
+      <small style="display:block;margin-top:8px;color:#64748b">یہ کوڈ صرف دیکھنے اور پرنٹ کی اجازت دیتا ہے</small>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="head">
+    <div><h1 style="margin:0;font-size:21px">💱 ابو صفوان کرنسی ایکسچینج</h1><small id="who"></small></div>
+    <div style="text-align:left"><div id="clock" style="font-size:12px"></div><button class="btn danger" style="padding:5px 10px;margin-top:5px;font-size:12px" onclick="logout()">لاگ آؤٹ</button></div>
+  </div>
+</header>
+
+<div class="layout">
+<main>
+<div class="card" id="codeCard" style="display:none;border:2px solid var(--gold)">
+<h2 style="margin-top:0">👥 کوڈ سے اجازت دیں (صرف مالک)</h2>
+<p style="font-size:12px;color:#64748b">کوڈ بنائیں اور دوسرے کو بھیجیں - اس کو صرف دیکھنے اور پرنٹ کی اجازت ہوگی، حذف / نیا / اپڈیٹ کی اجازت نہیں ہوگی</p>
+<div class="row"><button class="btn blue" onclick="generateCode()">➕ نیا کوڈ بنائیں</button><button class="btn gray" onclick="loadCodes()">🔄 فعال کوڈز</button></div>
+<div id="lastCodeBox" style="display:none;margin-top:12px;background:#dcfce7;padding:12px;border-radius:10px;text-align:center">
+<b>نیا کوڈ:</b><br><span id="lastCode" style="font-size:34px;font-weight:bold;letter-spacing:5px"></span><br>
+<button class="btn primary" style="margin-top:8px" onclick="shareCode()">📱 واٹس ایپ پر بھیجیں</button>
+</div>
+<div id="codesList" style="margin-top:12px"></div>
+</div>
+
+<div class="card">
+<h2 style="margin-top:0">آج کے ریٹس</h2>
+<div
