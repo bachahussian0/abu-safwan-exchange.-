@@ -1,0 +1,314 @@
+html
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>ابو صفوان کرنسی چینج</title>
+ <style>
+ * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+ body { background-color: #f4f7f6; padding: 20px; }
+ .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+ h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; }
+ .auto-date { text-align: center; color: #7f8c8d; margin-bottom: 20px; font-size: 14px; }
+ 
+ /* Login Section */
+ #loginSection { text-align: center; padding: 40px 0; }
+ #appSection { display: none; }
+ 
+ .form-group { margin-bottom: 15px; }
+ label { display: block; margin-bottom: 5px; color: #34495e; font-weight: bold; }
+ input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; direction: ltr; text-align: right; }
+ 
+ .btn { background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; transition: 0.3s; }
+ .btn:hover { opacity: 0.9; }
+ .btn-danger { background-color: #e74c3c; }
+ .btn-success { background-color: #2ecc71; }
+ .btn-warning { background-color: #f39c12; }
+ 
+ .search-box { margin: 20px 0; }
+ .transaction-list { margin-top: 20px; overflow-x: auto; }
+ table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+ th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
+ th { background-color: #2c3e50; color: white; }
+ tr:hover { background-color: #f1f1f1; }
+ 
+ .total-display { font-size: 22px; font-weight: bold; color: #27ae60; margin-top: 20px; text-align: center; border-top: 2px solid #eee; padding-top: 10px; }
+ .action-btns button { padding: 5px 10px; font-size: 14px; }
+ </style>
+</head>
+<body>
+
+<div class="container">
+ <h1>ابو صفوان کرنسی چینج</h1>
+ 
+ <!-- Login Screen -->
+ <div id="loginSection">
+ <div class="form-group">
+ <label>لاگ ان پاس ورڈ درج کریں</label>
+ <input type="password" id="passwordInput" placeholder="Pass: bacha0968023">
+ </div>
+ <button class="btn btn-success" onclick="checkLogin()">شروع کریں</button>
+ <p id="loginError" style="color:red; margin-top:10px;"></p>
+ </div>
+
+ <!-- Main App Screen -->
+ <div id="appSection">
+ <div class="auto-date">آج کی تاریخ: <span id="currentDate"></span></div>
+
+ <!-- Search -->
+ <div class="search-box">
+ <input type="text" id="searchInput" onkeyup="searchTransactions()" placeholder="نام یا تفصیل سے تلاش کریں...">
+ </div>
+
+ <!-- Entry Form -->
+ <div style="display:flex; flex-wrap:wrap; gap:15px;">
+ <div class="form-group" style="flex:1; min-width:200px;">
+ <label>کسٹمر نام</label>
+ <input type="text" id="customerName">
+ </div>
+ <div class="form-group" style="flex:1; min-width:200px;">
+ <label>رقم (Amount)</label>
+ <input type="number" id="amount" oninput="calcTotal()">
+ </div>
+ <div class="form-group" style="flex:1; min-width:200px;">
+ <label>ریٹ (Rate)</label>
+ <input type="number" id="rate" step="0.01" oninput="calcTotal()">
+ </div>
+ <div class="form-group" style="flex:1; min-width:200px;">
+ <label>وصول شدہ رقم (Received)</label>
+ <input type="number" id="receivedAmount" oninput="calcRemaining()">
+ </div>
+ <div class="form-group" style="flex:1; min-width:200px;">
+ <label>وصول کنندہ نام</label>
+ <input type="text" id="receiverName">
+ </div>
+ </div>
+
+ <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin:15px 0; display:flex; justify-content:space-around;">
+ <div><strong>کل رقم:</strong> <span id="totalDisplay">0.00</span></div>
+ <div><strong>بقایا:</strong> <span id="remainingDisplay">0.00</span></div>
+ </div>
+
+ <div style="text-align:center;">
+ <button class="btn btn-success" onclick="saveTransaction()">محفوظ کریں</button>
+ <button class="btn btn-warning" id="updateBtn" style="display:none;" onclick="updateTransaction()">اپڈیٹ کریں</button>
+ <button class="btn" onclick="clearForm()">فارم صاف کریں</button>
+ </div>
+
+ <!-- Transaction List -->
+ <div class="transaction-list">
+ <table id="transactionsTable">
+ <thead>
+ <tr>
+ <th>تاریخ</th>
+ <th>کسٹمر</th>
+ <th>رقم</th>
+ <th>ریٹ</th>
+ <th>کل</th>
+ <th>وصول</th>
+ <th>بقایا</th>
+ <th>وصول کنندہ</th>
+ <th>عمل</th>
+ </tr>
+ </thead>
+ <tbody id="tableBody"></tbody>
+ </table>
+ </div>
+
+ <div class="total-display">
+ کل مجموعی بقایا: <span id="grandTotal">0.00</span>
+ </div>
+ </div>
+</div>
+
+<script>
+ const PASSWORD = "bacha0968023";
+ let transactions = [];
+ let editIndex = -1;
+
+ // Set Date
+ document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-GB');
+
+ function checkLogin() {
+ const pass = document.getElementById('passwordInput').value;
+ if(pass === PASSWORD) {
+ document.getElementById('loginSection').style.display = 'none';
+ document.getElementById('appSection').style.display = 'block';
+ loadData();
+ renderTable();
+ } else {
+ document.getElementById('loginError').innerText = "غلط پاس ورڈ! دوبارہ کوشش کریں۔";
+ }
+ }
+
+ function calcTotal() {
+ const amt = parseFloat(document.getElementById('amount').value) || 0;
+ const rate = parseFloat(document.getElementById('rate').value) || 0;
+ const total = amt * rate;
+ document.getElementById('totalDisplay').innerText = total.toFixed(2);
+ calcRemaining();
+ }
+
+ function calcRemaining() {
+ const total = parseFloat(document.getElementById('totalDisplay').innerText) || 0;
+ const rec = parseFloat(document.getElementById('receivedAmount').value) || 0;
+ const rem = total - rec;
+ document.getElementById('remainingDisplay').innerText = rem > 0 ? rem.toFixed(2) : "0.00";
+ }
+
+ function saveTransaction() {
+ const name = document.getElementById('customerName').value;
+ const amount = parseFloat(document.getElementById('amount').value);
+ const rate = parseFloat(document.getElementById('rate').value);
+ const received = parseFloat(document.getElementById('receivedAmount').value) || 0;
+ const receiver = document.getElementById('receiverName').value;
+
+ if(!name || !amount || !rate) {
+ alert("براہ کرم نام، رقم اور ریٹ درج کریں");
+ return;
+ }
+
+ const total = amount * rate;
+ const remaining = total - received;
+ const date = new Date().toLocaleDateString('en-GB');
+
+ const transaction = {
+ id: Date.now(),
+ date: date,
+ customerName: name,
+ amount: amount,
+ rate: rate,
+ total: total,
+ received: received,
+ remaining: remaining,
+ receiverName: receiver
+ };
+
+ transactions.push(transaction);
+ saveData();
+ clearForm();
+ renderTable();
+ }
+
+ function renderTable() {
+ const tbody = document.getElementById('tableBody');
+ tbody.innerHTML = '';
+ let grandTotalRemaining = 0;
+
+ transactions.forEach((t, index) => {
+ grandTotalRemaining += t.remaining;
+ const row = `
+ <tr>
+ <td>${t.date}</td>
+ <td>${t.customerName}</td>
+ <td>${t.amount}</td>
+ <td>${t.rate}</td>
+ <td>${t.total.toFixed(2)}</td>
+ <td>${t.received}</td>
+ <td>${t.remaining.toFixed(2)}</td>
+ <td>${t.receiverName || '-'}</td>
+ <td class="action-btns">
+ <button class="btn btn-warning" onclick="editTransaction(${index})">اپڈیٹ</button>
+ <button class="btn btn-danger" onclick="deleteTransaction(${index})">حذف</button>
+ </td>
+ </tr>
+ `;
+ tbody.innerHTML += row;
+ });
+
+ document.getElementById('grandTotal').innerText = grandTotalRemaining.toFixed(2);
+ }
+
+ function editTransaction(index) {
+ const t = transactions[index];
+ document.getElementById('customerName').value = t.customerName;
+ document.getElementById('amount').value = t.amount;
+ document.getElementById('rate').value = t.rate;
+ document.getElementById('receivedAmount').value = t.received;
+ document.getElementById('receiverName').value = t.receiverName;
+ 
+ calcTotal();
+ 
+ editIndex = index;
+ document.getElementById('updateBtn').style.display = 'inline-block';
+ window.scrollTo({top: 0, behavior: 'smooth'});
+ }
+
+ function updateTransaction() {
+ if(editIndex === -1) return;
+ 
+ const name = document.getElementById('customerName').value;
+ const amount = parseFloat(document.getElementById('amount').value);
+ const rate = parseFloat(document.getElementById('rate').value);
+ const received = parseFloat(document.getElementById('receivedAmount').value) || 0;
+ const receiver = document.getElementById('receiverName').value;
+ const total = amount * rate;
+ const remaining = total - received;
+
+ transactions[editIndex] = {
+ ...transactions[editIndex],
+ customerName: name,
+ amount: amount,
+ rate: rate,
+ total: total,
+ received: received,
+ remaining: remaining,
+ receiverName: receiver
+ };
+
+ saveData();
+ clearForm();
+ renderTable();
+ alert("ریکارڈ اپڈیٹ ہو گیا!");
+ }
+
+ function deleteTransaction(index) {
+ if(confirm("کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟")) {
+ transactions.splice(index, 1);
+ saveData();
+ renderTable();
+ }
+ }
+
+ function searchTransactions() {
+ const term = document.getElementById('searchInput').value.toLowerCase();
+ const rows = document.querySelectorAll('#tableBody tr');
+ 
+ rows.forEach(row => {
+ const text = row.innerText.toLowerCase();
+ if(text.includes(term)) {
+ row.style.display = '';
+ } else {
+ row.style.display = 'none';
+ }
+ });
+ }
+
+ function clearForm() {
+ document.getElementById('customerName').value = '';
+ document.getElementById('amount').value = '';
+ document.getElementById('rate').value = '';
+ document.getElementById('receivedAmount').value = '';
+ document.getElementById('receiverName').value = '';
+ document.getElementById('totalDisplay').innerText = '0.00';
+ document.getElementById('remainingDisplay').innerText = '0.00';
+ editIndex = -1;
+ document.getElementById('updateBtn').style.display = 'none';
+ }
+
+ // Local Storage Functions
+ function saveData() {
+ localStorage.setItem('abuSafwanCurrency', JSON.stringify(transactions));
+ }
+
+ function loadData() {
+ const data = localStorage.getItem('abuSafwanCurrency');
+ if(data) {
+ transactions = JSON.parse(data);
+ }
+ }
+</script>
+
+</body>
+</html
