@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ابو صفوان کرنسی چینج — آن لائن</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f3f6f9;color:#17212b}
+header{background:#0b5d4b;color:#fff;padding:18px;text-align:center}h1{margin:0}
+.wrap{max-width:1100px;margin:auto;padding:14px}.card{background:#fff;padding:16px;margin:12px 0;border-radius:14px;box-shadow:0 2px 10px #0001}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}label{font-weight:bold;font-size:14px;display:block;margin-bottom:5px}
+input,button{font:inherit;padding:10px;border-radius:9px;border:1px solid #ccd5dc;width:100%}button{border:0;color:#fff;font-weight:bold;cursor:pointer}
+.green{background:#0b7a61}.blue{background:#1769aa}.red{background:#c62828}.gray{background:#60717e}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{width:auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{text-align:center;background:#eef7f4;padding:13px;border-radius:12px}.stat b{display:block;font-size:20px;color:#0b5d4b}
+table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}th{background:#0b5d4b;color:white}
+.table{overflow:auto}.login{max-width:420px;margin:40px auto}.hidden{display:none}.msg{margin-top:8px;font-weight:bold}
+@media(max-width:750px){.grid,.stats{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid,.stats{grid-template-columns:1fr}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="loginPage">
+<header><h1>ابو صفوان کرنسی چینج</h1><div>آن لائن مشترکہ حساب</div></header>
+<div class="wrap"><div class="card login">
+<h2>لاگ اِن</h2>
+<label>ای میل</label><input id="email" type="email" placeholder="Admin/User کا ای میل">
+<label style="margin-top:10px">پاس ورڈ</label><input id="password" type="password" placeholder="پاس ورڈ">
+<button class="green" style="margin-top:12px" onclick="login()">داخل ہوں</button>
+<div id="loginMsg" class="msg"></div>
+<p>پہلے Supabase میں Admin اور دوسرے موبائل کے User اکاؤنٹ بنائیں۔</p>
+</div></div></div>
+
+<div id="app" class="hidden">
+<header><h1>ابو صفوان کرنسی چینج</h1><div id="userInfo"></div></header>
+<div class="wrap">
+<div class="stats">
+<div class="stat">کل ریکارڈ<b id="count">0</b></div><div class="stat">کل رقم<b id="total">0</b></div>
+<div class="stat">کل وصول<b id="recv">0</b></div><div class="stat">کل بقایا<b id="due">0</b></div>
+</div>
+<div class="card">
+<h2>نیا حساب</h2><div class="grid">
+<div><label>کسٹمر نام</label><input id="customer"></div>
+<div><label>رقم</label><input id="amount" type="number" step="0.01"></div>
+<div><label>وصول</label><input id="received" type="number" step="0.01"></div>
+<div><label>ریٹ</label><input id="rate" type="number" step="0.000001"></div>
+<div><label>وصول کنندہ نام</label><input id="receiver"></div>
+<div><label>دوسری وصول</label><input id="received2" type="number" step="0.01"></div>
+<div><label>کل رقم</label><input id="grand" readonly></div>
+<div><label>کل وصول</label><input id="tr" readonly></div>
+<div><label>کل بقایا</label><input id="td" readonly></div>
+<div><label>تاریخ</label><input id="date" type="datetime-local"></div>
+</div>
+<div class="actions"><button class="green" onclick="save()">محفوظ کریں</button><button class="blue" onclick="update()">اپڈیٹ</button><button class="red" onclick="del()">حذف</button><button class="gray" onclick="clearForm()">نیا</button></div>
+</div>
+<div class="card"><input id="search" placeholder="کسٹمر یا وصول کنندہ تلاش کریں" oninput="render()"></div>
+<div class="card table"><table><thead><tr><th>تاریخ</th><th>کسٹمر</th><th>رقم</th><th>ریٹ</th><th>کل رقم</th><th>وصول</th><th>بقایا</th><th>وصول کنندہ</th><th>کارروائی</th></tr></thead><tbody id="tbody"></tbody></table></div>
+</div></div>
+<script>
+/* Supabase Dashboard سے یہ دونوں values یہاں لگائیں */
+const SUPABASE_URL="https://bvypnhintuiejqpkpjox.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_T_rZSYLkDynbSXi1JflY0Q_IPFcyfZa";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let rows=[],editId=null;
+
+function calc(){
+ let a=+amount.value||0,r=+rate.value||0,x=+received.value||0,y=+received2.value||0;
+ let total=r?a*r:a,tr=x+y;
+ grand.value=total.toFixed(2);this.tr.value=tr.toFixed(2);td.value=Math.max(0,total-tr).toFixed(2);
+}
+["amount","rate","received","received2"].forEach(id=>document.getElementById(id).addEventListener("input",calc));
+
+async function login(){
+ loginMsg.textContent="داخل ہو رہا ہے...";
+ const {error}=await sb.auth.signInWithPassword({email:email.value,password:password.value});
+ if(error){loginMsg.textContent=error.message;return} showApp();
+}
+async function showApp(){
+ loginPage.classList.add("hidden");app.classList.remove("hidden");
+ const {data:{user}}=await sb.auth.getUser();userInfo.textContent="لاگ اِن: "+(user?.email||"");
+ clearForm();await load();
+}
+async function load(){
+ const {data,error}=await sb.from("currency_records").select("*").order("record_date",{ascending:false});
+ if(error){alert(error.message);return}rows=data||[];render();
+}
+function form(){
+ calc();return {customer:customer.value.trim(),amount:+amount.value||0,received:+received.value||0,
+ received2:+received2.value||0,rate:+rate.value||0,receiver:receiver.value.trim(),
+ total:+grand.value||0,total_received:+tr.value||0,total_due:+td.value||0,
+ record_date:date.value?new Date(date.value).toISOString():new Date().toISOString()};
+}
+async function save(){
+ const x=form();if(!x.customer)return alert("کسٹمر نام درج کریں");
+ const {error}=await sb.from("currency_records").insert(x);if(error)return alert(error.message);
+ clearForm();await load();alert("حساب محفوظ ہوگیا");
+}
+async function update(){
+ if(!editId)return alert("پہلے ریکارڈ منتخب کریں");
+ const {error}=await sb.from("currency_records").update(form()).eq("id",editId);if(error)return alert(error.message);
+ clearForm();await load();alert("حساب اپڈیٹ ہوگیا");
+}
+async function del(){
+ if(!editId)return alert("پہلے ریکارڈ منتخب کریں");if(!confirm("حذف کریں؟"))return;
+ const {error}=await sb.from("currency_records").delete().eq("id",editId);if(error)return alert(error.message);
+ clearForm();await load();
+}
+function edit(x){
+ editId=x.id;customer.value=x.customer;amount.value=x.amount;received.value=x.received;received2.value=x.received2;
+ rate.value=x.rate;receiver.value=x.receiver||"";date.value=new Date(x.record_date).toISOString().slice(0,16);calc();
+ scrollTo({top:0,behavior:"smooth"});
+}
+function clearForm(){editId=null;customer.value=amount.value=received.value=received2.value=rate.value=receiver.value="";let d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());date.value=d.toISOString().slice(0,16);calc()}
+function render(){
+ const q=(search.value||"").toLowerCase();let a=rows.filter(x=>(x.customer+" "+(x.receiver||"")).toLowerCase().includes(q));
+ tbody.innerHTML=a.map(x=>`<tr><td>${new Date(x.record_date).toLocaleString("ur-PK")}</td><td>${e(x.customer)}</td><td>${n(x.amount)}</td><td>${n(x.rate)}</td><td>${n(x.total)}</td><td>${n(x.total_received)}</td><td>${n(x.total_due)}</td><td>${e(x.receiver)}</td><td><button class="blue" onclick='edit(${JSON.stringify(x)})'>اپڈیٹ</button></td></tr>`).join("");
+ count.textContent=rows.length;total.textContent=n(rows.reduce((s,x)=>s+ +x.total,0));recv.textContent=n(rows.reduce((s,x)=>s+ +x.total_received,0));due.textContent=n(rows.reduce((s,x)=>s+ +x.total_due,0));
+}
+function n(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:2})}function e(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+sb.auth.onAuthStateChange((_event,session)=>{if(session&&!app.classList.contains("hidden"))load()});
+</script></body></html>
