@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ابو صفوان کرنسی ایکسچینج</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --navy:#062a52;
+  --blue:#0b67d1;
+  --green:#10a85a;
+  --gold:#f5b82e;
+  --bg:#f4f7fb;
+  --white:#ffffff;
+  --text:#172033;
+  --border:#dfe5ec;
+  --red:#dc3545;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,"Noto Sans Arabic",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Header */
+
+.header{
+  background:linear-gradient(135deg,#062a52,#0b67d1);
+  color:white;
+  text-align:center;
+  padding:30px 15px 45px;
+  border-bottom:4px solid var(--gold);
+}
+
+.logo{
+  width:70px;
+  height:70px;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:white;
+  color:var(--navy);
+  border:3px solid var(--gold);
+  font-size:30px;
+  font-weight:bold;
+}
+
+.header h1{
+  margin:12px 0 5px;
+  font-size:27px;
+}
+
+.header p{
+  margin:0;
+  opacity:.9;
+  font-size:14px;
+}
+
+/* Main */
+
+.container{
+  max-width:600px;
+  margin:-25px auto 30px;
+  padding:0 15px;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:25px;
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
+}
+
+/* Rate */
+
+.rate-box{
+  text-align:center;
+  background:#effaf4;
+  border:1px solid #c9ead6;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:22px;
+}
+
+.rate-title{
+  color:#666;
+  font-size:14px;
+}
+
+.rate{
+  color:var(--green);
+  font-size:30px;
+  font-weight:bold;
+  margin:5px 0;
+}
+
+.rate-unit{
+  color:#777;
+  font-size:13px;
+}
+
+/* Form */
+
+.form-group{
+  margin-bottom:17px;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  color:var(--navy);
+  margin-bottom:7px;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:16px;
+  outline:none;
+}
+
+input:focus{
+  border-color:var(--blue);
+}
+
+/* Total */
+
+.total-box{
+  text-align:center;
+  background:#f8fafc;
+  border:2px solid var(--gold);
+  border-radius:14px;
+  padding:16px;
+  margin:20px 0;
+}
+
+.total-title{
+  color:#666;
+  font-size:14px;
+}
+
+.total{
+  color:var(--navy);
+  font-size:30px;
+  font-weight:bold;
+  margin:5px 0;
+}
+
+.total-unit{
+  color:#777;
+  font-size:13px;
+}
+
+/* Button */
+
+.order-btn{
+  width:100%;
+  padding:15px;
+  border:0;
+  border-radius:12px;
+  background:linear-gradient(135deg,#10a85a,#087c3d);
+  color:white;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.order-btn:disabled{
+  opacity:.6;
+}
+
+/* Message */
+
+.message{
+  display:none;
+  margin-top:15px;
+  padding:13px;
+  border-radius:10px;
+  text-align:center;
+  line-height:1.8;
+}
+
+.success{
+  display:block;
+  background:#e5f8ed;
+  color:#087c3d;
+}
+
+.error{
+  display:block;
+  background:#ffe7ea;
+  color:#a51d2d;
+}
+
+/* Footer */
+
+.footer{
+  text-align:center;
+  color:#777;
+  font-size:13px;
+  padding:10px 15px 25px;
+}
+
+.footer strong{
+  color:var(--navy);
+}
+
+@media(max-width:500px){
+
+  .header h1{
+    font-size:23px;
+  }
+
+  .card{
+    padding:18px;
+  }
+
+  .rate{
+    font-size:27px;
+  }
+
+  .total{
+    font-size:26px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+  <div class="logo">
+    ا
+  </div>
+
+  <h1>ابو صفوان کرنسی ایکسچینج</h1>
+
+  <p>
+    سعودی ریال سے پاکستانی روپے کا آسان تبادلہ
+  </p>
+
+</header>
+
+
+<main class="container">
+
+  <section class="card">
+
+    <!-- موجودہ ریٹ -->
+
+    <div class="rate-box">
+
+      <div class="rate-title">
+        موجودہ سعودی ریال ریٹ
+      </div>
+
+      <div class="rate" id="rate">
+        لوڈ ہو رہا ہے...
+      </div>
+
+      <div class="rate-unit">
+        1 سعودی ریال = پاکستانی روپے
+      </div>
+
+    </div>
+
+
+    <!-- آرڈر فارم -->
+
+    <form id="orderForm">
+
+      <div class="form-group">
+
+        <label for="name">
+          اپنا نام
+        </label>
+
+        <input
+          type="text"
+          id="name"
+          placeholder="اپنا نام درج کریں"
+          required
+          minlength="2"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="sar">
+          سعودی ریال کی رقم
+        </label>
+
+        <input
+          type="number"
+          id="sar"
+          placeholder="مثلاً 1000"
+          min="0.01"
+          step="0.01"
+          required
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="receiver">
+          وصول کنندہ کا نام
+        </label>
+
+        <input
+          type="text"
+          id="receiver"
+          placeholder="وصول کنندہ کا نام درج کریں"
+          required
+          minlength="2"
+        >
+
+      </div>
+
+
+      <!-- کل رقم -->
+
+      <div class="total-box">
+
+        <div class="total-title">
+          کل پاکستانی رقم
+        </div>
+
+        <div class="total" id="total">
+          0.00
+        </div>
+
+        <div class="total-unit">
+          پاکستانی روپے
+        </div>
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="order-btn"
+        id="orderButton"
+      >
+        آرڈر کریں
+      </button>
+
+    </form>
+
+
+    <div id="message" class="message"></div>
+
+  </section>
+
+</main>
+
+
+<footer class="footer">
+
+  <strong>ابو صفوان کرنسی ایکسچینج</strong>
+
+  <br>
+
+  آپ کے اعتماد کے ساتھ
+
+</footer>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+"https://bvypnhintuiejqpkpjox.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_T_rZSYLkDynbSXi1JflY0Q_IPFcyfZa";
+
+const db = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =========================
+   موجودہ ریٹ
+========================= */
+
+let currentRate = 0;
+
+
+/* =========================
+   ریٹ لوڈ کریں
+========================= */
+
+async function loadRate(){
+
+  const rateElement =
+    document.getElementById("rate");
+
+  const { data, error } =
+    await db
+      .from("settings")
+      .select("rate")
+      .limit(1)
+      .maybeSingle();
+
+  if(error){
+
+    console.error(error);
+
+    rateElement.textContent =
+      "ریٹ دستیاب نہیں";
+
+    return;
+  }
+
+  if(!data){
+
+    rateElement.textContent =
+      "ریٹ دستیاب نہیں";
+
+    return;
+  }
+
+  currentRate =
+    Number(data.rate);
+
+  rateElement.textContent =
+    formatNumber(currentRate);
+
+  calculateTotal();
+}
+
+
+/* =========================
+   کل رقم
+========================= */
+
+function calculateTotal(){
+
+  const sar =
+    Number(
+      document.getElementById("sar").value
+    ) || 0;
+
+  const total =
+    sar * currentRate;
+
+  document.getElementById("total")
+    .textContent =
+    formatNumber(total);
+}
+
+
+/* ریال تبدیل ہونے پر حساب */
+
+document
+  .getElementById("sar")
+  .addEventListener(
+    "input",
+    calculateTotal
+  );
+
+
+/* =========================
+   آرڈر جمع کریں
+========================= */
+
+document
+  .getElementById("orderForm")
+  .addEventListener(
+    "submit",
+    async function(e){
+
+      e.preventDefault();
+
+      const name =
+        document
+          .getElementById("name")
+          .value
+          .trim();
+
+      const sar =
+        Number(
+          document
+            .getElementById("sar")
+            .value
+        );
+
+      const receiver =
+        document
+          .getElementById("receiver")
+          .value
+          .trim();
+
+      const button =
+        document.getElementById(
+          "orderButton"
+        );
+
+
+      /* چیک */
+
+      if(name.length < 2){
+
+        showMessage(
+          "براہ کرم اپنا نام درج کریں۔",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if(!sar || sar <= 0){
+
+        showMessage(
+          "براہ کرم سعودی ریال کی درست رقم درج کریں۔",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if(receiver.length < 2){
+
+        showMessage(
+          "براہ کرم وصول کنندہ کا نام درج کریں۔",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if(!currentRate || currentRate <= 0){
+
+        showMessage(
+          "ریٹ دستیاب نہیں ہے۔",
+          "error"
+        );
+
+        return;
+      }
+
+
+      button.disabled = true;
+
+      button.textContent =
+        "آرڈر بھیجا جا رہا ہے...";
+
+
+      /* Supabase میں آرڈر */
+
+      const { error } =
+        await db
+          .from("orders")
+          .insert({
+
+            name:name,
+
+            receiver:receiver,
+
+            sar:sar,
+
+            rate:currentRate,
+
+            sar_received:0,
+
+            pkr_received:0,
+
+            status:"نیا"
+
+          });
+
+
+      if(error){
+
+        console.error(error);
+
+        showMessage(
+          "آرڈر جمع نہیں ہوا۔ براہ کرم دوبارہ کوشش کریں۔",
+          "error"
+        );
+
+        button.disabled = false;
+
+        button.textContent =
+          "آرڈر کریں";
+
+        return;
+      }
+
+
+      /* کامیابی */
+
+      const total =
+        sar * currentRate;
+
+      showMessage(
+        "آپ کا آرڈر کامیابی سے جمع ہوگیا۔" +
+        "<br>" +
+        "کل رقم: " +
+        formatNumber(total) +
+        " پاکستانی روپے",
+        "success"
+      );
+
+
+      /* فارم صاف */
+
+      document
+        .getElementById("orderForm")
+        .reset();
+
+      document
+        .getElementById("total")
+        .textContent =
+        "0.00";
+
+
+      button.disabled = false;
+
+      button.textContent =
+        "آرڈر کریں";
+
+    }
+  );
+
+
+/* =========================
+   پیغام
+========================= */
+
+function showMessage(text,type){
+
+  const message =
+    document.getElementById("message");
+
+  message.innerHTML = text;
+
+  message.className =
+    "message " + type;
+
+}
+
+
+/* =========================
+   نمبر فارمیٹ
+========================= */
+
+function formatNumber(number){
+
+  return Number(number || 0)
+    .toLocaleString("en-US",{
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+    });
+}
+
+
+/* =========================
+   شروع میں ریٹ لوڈ
+========================= */
+
+loadRate();
+
+
+/* ہر 30 سیکنڈ بعد نیا ریٹ */
+
+setInterval(
+  loadRate,
+  30000
+);
+
+</script>
+
+</body>
+</html>
