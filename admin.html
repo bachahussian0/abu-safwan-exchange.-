@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>ابو صفوان کرنسی ایکسچینج — Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --navy:#062a52;
+  --blue:#0b67d1;
+  --green:#10a85a;
+  --gold:#f5b82e;
+  --red:#dc3545;
+  --bg:#f4f7fb;
+  --white:#fff;
+  --text:#172033;
+  --border:#dfe5ec;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,"Noto Sans Arabic",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+button,
+input,
+select{
+  font-family:inherit;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+.login-page{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:linear-gradient(
+    135deg,
+    #062a52,
+    #0b67d1
+  );
+}
+
+.login-card{
+  width:100%;
+  max-width:420px;
+  background:white;
+  padding:30px;
+  border-radius:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.login-logo{
+  width:75px;
+  height:75px;
+  margin:0 auto 15px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--navy);
+  color:white;
+  border:3px solid var(--gold);
+  font-size:30px;
+  font-weight:bold;
+}
+
+.login-card h1{
+  text-align:center;
+  color:var(--navy);
+  font-size:24px;
+  margin:0 0 5px;
+}
+
+.login-card p{
+  text-align:center;
+  color:#777;
+  margin:0 0 25px;
+}
+
+.form-group{
+  margin-bottom:16px;
+}
+
+.form-group label{
+  display:block;
+  margin-bottom:7px;
+  font-weight:bold;
+  color:var(--navy);
+}
+
+.form-group input{
+  width:100%;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:16px;
+  outline:none;
+}
+
+.form-group input:focus{
+  border-color:var(--blue);
+}
+
+.login-btn{
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:10px;
+  background:var(--blue);
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.message{
+  display:none;
+  padding:12px;
+  border-radius:10px;
+  margin-top:15px;
+  text-align:center;
+  line-height:1.8;
+}
+
+.message.error{
+  display:block;
+  background:#ffe7ea;
+  color:#a51d2d;
+}
+
+.message.success{
+  display:block;
+  background:#e5f8ed;
+  color:#087c3d;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+  background:var(--navy);
+  color:white;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  position:sticky;
+  top:0;
+  z-index:100;
+  border-bottom:3px solid var(--gold);
+}
+
+.header h1{
+  margin:0;
+  font-size:22px;
+}
+
+.header p{
+  margin:3px 0 0;
+  font-size:13px;
+  opacity:.8;
+}
+
+.header-buttons{
+  display:flex;
+  gap:8px;
+}
+
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:11px 16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn-blue{
+  background:var(--blue);
+  color:white;
+}
+
+.btn-green{
+  background:var(--green);
+  color:white;
+}
+
+.btn-gold{
+  background:var(--gold);
+  color:#111;
+}
+
+.btn-red{
+  background:var(--red);
+  color:white;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.container{
+  max-width:1550px;
+  margin:auto;
+  padding:20px;
+}
+
+
+/* =========================
+   RATE
+========================= */
+
+.rate-card{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 4px 18px rgba(0,0,0,.06);
+  margin-bottom:20px;
+}
+
+.rate-card h2{
+  margin:0 0 15px;
+  color:var(--navy);
+  font-size:20px;
+}
+
+.rate-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.rate-row input{
+  width:220px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  font-size:17px;
+}
+
+.rate-status{
+  font-size:14px;
+  font-weight:bold;
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:13px;
+  margin-bottom:20px;
+}
+
+.stat{
+  background:white;
+  border-radius:15px;
+  padding:16px;
+  box-shadow:0 4px 18px rgba(0,0,0,.05);
+  border-top:4px solid var(--blue);
+}
+
+.stat.green{
+  border-top-color:var(--green);
+}
+
+.stat.gold{
+  border-top-color:var(--gold);
+}
+
+.stat.red{
+  border-top-color:var(--red);
+}
+
+.stat-title{
+  color:#777;
+  font-size:13px;
+  margin-bottom:7px;
+}
+
+.stat-value{
+  color:var(--navy);
+  font-size:21px;
+  font-weight:bold;
+}
+
+
+/* =========================
+   FILTER
+========================= */
+
+.filter-card{
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  margin-bottom:15px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.filter-card input,
+.filter-card select{
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  font-size:14px;
+}
+
+.filter-card input{
+  min-width:250px;
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-card{
+  background:white;
+  border-radius:16px;
+  overflow:auto;
+  box-shadow:0 4px 18px rgba(0,0,0,.06);
+}
+
+table{
+  width:100%;
+  min-width:1400px;
+  border-collapse:collapse;
+}
+
+th{
+  background:var(--navy);
+  color:white;
+  padding:12px 8px;
+  white-space:nowrap;
+}
+
+td{
+  padding:10px 8px;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+  white-space:nowrap;
+}
+
+tr:hover td{
+  background:#f8fbff;
+}
+
+td input,
+td select{
+  width:105px;
+  padding:8px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  text-align:center;
+}
+
+.due{
+  color:var(--red);
+  font-weight:bold;
+}
+
+.update-btn{
+  background:var(--green);
+  color:white;
+  border:0;
+  border-radius:8px;
+  padding:9px 15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.update-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.loading{
+  padding:30px;
+  text-align:center;
+  color:#777;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:1100px){
+
+  .stats{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:650px){
+
+  .header{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .header-buttons{
+    width:100%;
+  }
+
+  .header-buttons button{
+    flex:1;
+  }
+
+  .container{
+    padding:10px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+
+  .stat{
+    padding:12px;
+  }
+
+  .stat-value{
+    font-size:17px;
+  }
+
+  .filter-card input,
+  .filter-card select{
+    width:100%;
+    min-width:0;
+  }
+
+  .rate-row input{
+    width:100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+
+<!-- =========================
+     LOGIN PAGE
+========================= -->
+
+<section id="loginPage" class="login-page">
+
+  <div class="login-card">
+
+    <div class="login-logo">
+      ا
+    </div>
+
+    <h1>
+      ابو صفوان کرنسی ایکسچینج
+    </h1>
+
+    <p>
+      Admin Dashboard
+    </p>
+
+
+    <div class="form-group">
+
+      <label>
+        ای میل
+      </label>
+
+      <input
+        type="email"
+        id="email"
+        placeholder="Admin Email"
+        autocomplete="username"
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        پاس ورڈ
+      </label>
+
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+
+    </div>
+
+
+    <button
+      class="login-btn"
+      onclick="login()"
+      id="loginButton"
+    >
+      🔐 لاگ اِن
+    </button>
+
+
+    <div
+      id="loginMessage"
+      class="message"
+    ></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     DASHBOARD
+========================= -->
+
+<section
+  id="dashboard"
+  class="hidden"
+>
+
+<header class="header">
+
+  <div>
+
+    <h1>
+      ابو صفوان کرنسی ایکسچینج
+    </h1>
+
+    <p>
+      Admin Dashboard
+    </p>
+
+  </div>
+
+
+  <div class="header-buttons">
+
+    <button
+      class="btn btn-green"
+      onclick="loadOrders()"
+    >
+      🔄 ریفریش
+    </button>
+
+
+    <button
+      class="btn btn-gold"
+      onclick="exportCSV()"
+    >
+      📥 CSV
+    </button>
+
+
+    <button
+      class="btn btn-red"
+      onclick="logout()"
+    >
+      🚪 Logout
+    </button>
+
+  </div>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- =========================
+     RATE
+========================= -->
+
+<section class="rate-card">
+
+  <h2>
+    💱 سعودی ریال کا موجودہ ریٹ
+  </h2>
+
+  <div class="rate-row">
+
+    <input
+      type="number"
+      id="rateInput"
+      min="0.01"
+      step="0.01"
+      placeholder="مثلاً 75"
+    >
+
+    <button
+      class="btn btn-blue"
+      onclick="updateRate()"
+    >
+      💾 ریٹ اپڈیٹ کریں
+    </button>
+
+    <span
+      id="rateStatus"
+      class="rate-status"
+    ></span>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     STATS
+========================= -->
+
+<section class="stats">
+
+  <div class="stat">
+    <div class="stat-title">
+      کل سعودی ریال
+    </div>
+    <div
+      class="stat-value"
+      id="totalSAR"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="stat green">
+    <div class="stat-title">
+      سعودی ریال وصول
+    </div>
+    <div
+      class="stat-value"
+      id="receivedSAR"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="stat red">
+    <div class="stat-title">
+      سعودی ریال بقایا
+    </div>
+    <div
+      class="stat-value"
+      id="dueSAR"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="stat gold">
+    <div class="stat-title">
+      کل پاکستانی روپے
+    </div>
+    <div
+      class="stat-value"
+      id="totalPKR"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="stat green">
+    <div class="stat-title">
+      پاکستانی روپے وصول
+    </div>
+    <div
+      class="stat-value"
+      id="receivedPKR"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="stat red">
+    <div class="stat-title">
+      پاکستانی روپے بقایا
+    </div>
+    <div
+      class="stat-value"
+      id="duePKR"
+    >
+      0
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =========================
+     SEARCH
+========================= -->
+
+<section class="filter-card">
+
+  <input
+    type="text"
+    id="search"
+    placeholder="نام یا وصول کنندہ تلاش کریں..."
+    oninput="renderOrders()"
+  >
+
+
+  <select
+    id="statusFilter"
+    onchange="renderOrders()"
+  >
+
+    <option value="">
+      تمام اسٹیٹس
+    </option>
+
+    <option value="نیا">
+      نیا
+    </option>
+
+    <option value="قبول">
+      قبول
+    </option>
+
+    <option value="مکمل">
+      مکمل
+    </option>
+
+    <option value="منسوخ">
+      منسوخ
+    </option>
+
+  </select>
+
+
+  <button
+    class="btn btn-blue"
+    onclick="loadOrders()"
+  >
+    🔄 آرڈرز لوڈ کریں
+  </button>
+
+</section>
+
+
+<!-- =========================
+     ORDERS TABLE
+========================= -->
+
+<section class="table-card">
+
+  <div
+    id="loading"
+    class="loading"
+  >
+    آرڈرز لوڈ ہو رہے ہیں...
+  </div>
+
+
+  <table
+    id="ordersTable"
+    class="hidden"
+  >
+
+    <thead>
+
+      <tr>
+
+        <th>#</th>
+
+        <th>نام</th>
+
+        <th>وصول کنندہ</th>
+
+        <th>سعودی ریال</th>
+
+        <th>ریٹ</th>
+
+        <th>کل PKR</th>
+
+        <th>ریال وصول</th>
+
+        <th>ریال بقایا</th>
+
+        <th>PKR وصول</th>
+
+        <th>PKR بقایا</th>
+
+        <th>اسٹیٹس</th>
+
+        <th>تاریخ</th>
+
+        <th>اپڈیٹ</th>
+
+      </tr>
+
+    </thead>
+
+
+    <tbody id="ordersBody"></tbody>
+
+  </table>
+
+</section>
+
+</main>
+
+</section>
+
+
+<script>
+
+/* ==================================================
+   SUPABASE
+================================================== */
+
+const SUPABASE_URL =
+"https://bvypnhintuiejqpkpjox.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_T_rZSYLkDynbSXi1JflY0Q_IPFcyfZa";
+
+const db =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* ==================================================
+   VARIABLES
+================================================== */
+
+let orders = [];
+
+let currentUser = null;
+
+
+/* ==================================================
+   START
+================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    const {
+      data
+    } = await db.auth.getSession();
+
+    if(data.session){
+
+      await checkAdmin(
+        data.session
+      );
+
+    }
+
+  }
+);
+
+
+/* ==================================================
+   LOGIN
+================================================== */
+
+async function login(){
+
+  const email =
+    document
+      .getElementById("email")
+      .value
+      .trim();
+
+  const password =
+    document
+      .getElementById("password")
+      .value;
+
+  const button =
+    document.getElementById(
+      "loginButton"
+    );
+
+
+  if(!email || !password){
+
+    showLoginMessage(
+      "ای میل اور پاس ورڈ درج کریں۔",
+      "error"
+    );
+
+    return;
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "لاگ اِن ہو رہا ہے...";
+
+
+  const {
+    data,
+    error
+  } =
+  await db.auth.signInWithPassword({
+
+    email:email,
+
+    password:password
+
+  });
+
+
+  button.disabled = false;
+
+  button.textContent =
+    "🔐 لاگ اِن";
+
+
+  if(error){
+
+    showLoginMessage(
+      "لاگ اِن ناکام: " +
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+
+  await checkAdmin(
+    data.session
+  );
+}
+
+
+/* ==================================================
+   CHECK ADMIN
+================================================== */
+
+async function checkAdmin(session){
+
+  if(!session){
+
+    showLogin();
+
+    return;
+  }
+
+
+  currentUser =
+    session.user;
+
+
+  const {
+    data,
+    error
+  } =
+  await db
+    .from("admin_users")
+    .select("user_id")
+    .eq(
+      "user_id",
+      currentUser.id
+    )
+    .maybeSingle();
+
+
+  if(error){
+
+    showLoginMessage(
+      "Admin چیک کرنے میں مسئلہ: " +
+      error.message,
+      "error"
+    );
+
+    await db.auth.signOut();
+
+    return;
+  }
+
+
+  if(!data){
+
+    await db.auth.signOut();
+
+    showLogin();
+
+    showLoginMessage(
+      "اس اکاؤنٹ کو Admin کی اجازت حاصل نہیں ہے۔",
+      "error"
+    );
+
+    return;
+  }
+
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("dashboard")
+    .classList.remove("hidden");
+
+
+  await loadRate();
+
+  await loadOrders();
+}
+
+
+/* ==================================================
+   SHOW LOGIN
+================================================== */
+
+function showLogin(){
+
+  document
+    .getElementById("dashboard")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("loginPage")
+    .classList.remove("hidden");
+}
+
+
+/* ==================================================
+   LOGIN MESSAGE
+================================================== */
+
+function showLoginMessage(
+  text,
+  type
+){
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+  message.textContent =
+    text;
+
+  message.className =
+    "message " + type;
+
+}
+
+
+/* ==================================================
+   LOAD RATE
+================================================== */
+
+async function loadRate(){
+
+  const {
+    data,
+    error
+  } =
+  await db
+    .from("settings")
+    .select("id,rate")
+    .order("id",{
+      ascending:true
+    })
+    .limit(1)
+    .maybeSingle();
+
+
+  if(error){
+
+    console.error(error);
+
+    setRateStatus(
+      "ریٹ لوڈ نہیں ہوا۔",
+      "red"
+    );
+
+    return;
+  }
+
+
+  if(!data){
+
+    setRateStatus(
+      "Settings میں ریٹ موجود نہیں۔",
+      "red"
+    );
+
+    return;
+  }
+
+
+  document
+    .getElementById("rateInput")
+    .value =
+    data.rate;
+}
+
+
+/* ==================================================
+   UPDATE RATE
+================================================== */
+
+async function updateRate(){
+
+  const rate =
+    Number(
+      document
+        .getElementById("rateInput")
+        .value
+    );
+
+
+  if(!rate || rate <= 0){
+
+    setRateStatus(
+      "درست ریٹ درج کریں۔",
+      "red"
+    );
+
+    return;
+  }
+
+
+  const {
+    data:settings,
+    error:readError
+  } =
+  await db
+    .from("settings")
+    .select("id")
+    .order("id",{
+      ascending:true
+    })
+    .limit(1)
+    .maybeSingle();
+
+
+  if(readError){
+
+    setRateStatus(
+      readError.message,
+      "red"
+    );
+
+    return;
+  }
+
+
+  if(!settings){
+
+    setRateStatus(
+      "Settings کا ریکارڈ موجود نہیں۔",
+      "red"
+    );
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+  await db
+    .from("settings")
+    .update({
+
+      rate:rate,
+
+      updated_at:
+        new Date().toISOString()
+
+    })
+    .eq(
+      "id",
+      settings.id
+    );
+
+
+  if(error){
+
+    setRateStatus(
+      "ریٹ اپڈیٹ نہیں ہوا: " +
+      error.message,
+      "red"
+    );
+
+    return;
+  }
+
+
+  setRateStatus(
+    "✓ ریٹ کامیابی سے اپڈیٹ ہوگیا۔",
+    "green"
+  );
+}
+
+
+/* ==================================================
+   RATE STATUS
+================================================== */
+
+function setRateStatus(
+  text,
+  color
+){
+
+  const element =
+    document.getElementById(
+      "rateStatus"
+    );
+
+  element.textContent =
+    text;
+
+  element.style.color =
+    color === "green"
+      ? "#087c3d"
+      : "#dc3545";
+}
+
+
+/* ==================================================
+   LOAD ORDERS
+================================================== */
+
+async function loadOrders(){
+
+  document
+    .getElementById("loading")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("ordersTable")
+    .classList.add("hidden");
+
+
+  const {
+    data,
+    error
+  } =
+  await db
+    .from("orders")
+    .select("*")
+    .order(
+      "created_at",
+      {
+        ascending:false
+      }
+    );
+
+
+  if(error){
+
+    document
+      .getElementById("loading")
+      .textContent =
+      "آرڈرز لوڈ نہیں ہوئے: " +
+      error.message;
+
+    return;
+  }
+
+
+  orders =
+    data || [];
+
+
+  updateStats();
+
+  renderOrders();
+
+
+  document
+    .getElementById("loading")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("ordersTable")
+    .classList.remove("hidden");
+}
+
+
+/* ==================================================
+   RENDER ORDERS
+================================================== */
+
+function renderOrders(){
+
+  const body =
+    document.getElementById(
+      "ordersBody"
+    );
+
+
+  const search =
+    document
+      .getElementById("search")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const status =
+    document
+      .getElementById("statusFilter")
+      .value;
+
+
+  const filtered =
+    orders.filter(order => {
+
+      const text =
+        (
+          String(order.name || "") +
+          " " +
+          String(order.receiver || "")
+        ).toLowerCase();
+
+
+      const searchOK =
+        !search ||
+        text.includes(search);
+
+
+      const statusOK =
+        !status ||
+        order.status === status;
+
+
+      return searchOK && statusOK;
+
+    });
+
+
+  body.innerHTML = "";
+
+
+  if(filtered.length === 0){
+
+    body.innerHTML = `
+      <tr>
+        <td colspan="13">
+          کوئی آرڈر موجود نہیں۔
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  filtered.forEach(
+    (order,index) => {
+
+      const sar =
+        Number(order.sar) || 0;
+
+
+      const pkr =
+        Number(order.pkr) || 0;
+
+
+      const sarReceived =
+        Number(
+          order.sar_received
+        ) || 0;
+
+
+      const pkrReceived =
+        Number(
+          order.pkr_received
+        ) || 0;
+
+
+      const sarDue =
+        Math.max(
+          0,
+          sar - sarReceived
+        );
+
+
+      const pkrDue =
+        Math.max(
+          0,
+          pkr - pkrReceived
+        );
+
+
+      const date =
+        order.created_at
+          ? new Date(
+              order.created_at
+            ).toLocaleString(
+              "ur-PK"
+            )
+          : "-";
+
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeHtml(order.name)}
+        </td>
+
+        <td>
+          ${escapeHtml(order.receiver)}
+        </td>
+
+        <td>
+          ${formatNumber(sar)}
+        </td>
+
+        <td>
+          ${formatNumber(order.rate)}
+        </td>
+
+        <td>
+          ${formatNumber(pkr)}
+        </td>
+
+        <td>
+
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            id="sar-${order.id}"
+            value="${sarReceived}"
+          >
+
+        </td>
+
+        <td
+          class="due"
+          id="sarDue-${order.id}"
+        >
+          ${formatNumber(sarDue)}
+        </td>
+
+        <td>
+
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            id="pkr-${order.id}"
+            value="${pkrReceived}"
+          >
+
+        </td>
+
+        <td
+          class="due"
+          id="pkrDue-${order.id}"
+        >
+          ${formatNumber(pkrDue)}
+        </td>
+
+        <td>
+
+          <select
+            id="status-${order.id}"
+          >
+
+            <option
+              value="نیا"
+              ${order.status==="نیا"
+                ? "selected"
+                : ""}
+            >
+              نیا
+            </option>
+
+            <option
+              value="قبول"
+              ${order.status==="قبول"
+                ? "selected"
+                : ""}
+            >
+              قبول
+            </option>
+
+            <option
+              value="مکمل"
+              ${order.status==="مکمل"
+                ? "selected"
+                : ""}
+            >
+              مکمل
+            </option>
+
+            <option
+              value="منسوخ"
+              ${order.status==="منسوخ"
+                ? "selected"
+                : ""}
+            >
+              منسوخ
+            </option>
+
+          </select>
+
+        </td>
+
+        <td>
+          ${date}
+        </td>
+
+        <td>
+
+          <button
+            class="update-btn"
+            onclick="updateOrder(
+              ${order.id},
+              this
+            )"
+          >
+            اپڈیٹ
+          </button>
+
+        </td>
+
+      `;
+
+
+      body.appendChild(row);
+
+
+      /* SAR LIVE DUE */
+
+      const sarInput =
+        document.getElementById(
+          `sar-${order.id}`
+        );
+
+
+      sarInput.addEventListener(
+        "input",
+        function(){
+
+          const received =
+            Number(
+              this.value
+            ) || 0;
+
+
+          const due =
+            Math.max(
+              0,
+              sar - received
+            );
+
+
+          document
+            .getElementById(
+              `sarDue-${order.id}`
+            )
+            .textContent =
+            formatNumber(due);
+
+        }
+      );
+
+
+      /* PKR LIVE DUE */
+
+      const pkrInput =
+        document.getElementById(
+          `pkr-${order.id}`
+        );
+
+
+      pkrInput.addEventListener(
+        "input",
+        function(){
+
+          const received =
+            Number(
+              this.value
+            ) || 0;
+
+
+          const due =
+            Math.max(
+              0,
+              pkr - received
+            );
+
+
+          document
+            .getElementById(
+              `pkrDue-${order.id}`
+            )
+            .textContent =
+            formatNumber(due);
+
+        }
+      );
+
+    }
+  );
+}
+
+
+/* ==================================================
+   UPDATE ORDER
+================================================== */
+
+async function updateOrder(
+  id,
+  button
+){
+
+  const order =
+    orders.find(
+      item => item.id === id
+    );
+
+
+  if(!order){
+
+    alert(
+      "آرڈر نہیں ملا۔"
+    );
+
+    return;
+  }
+
+
+  const sar =
+    Number(order.sar) || 0;
+
+
+  const pkr =
+    Number(order.pkr) || 0;
+
+
+  const sarReceived =
+    Number(
+      document
+        .getElementById(
+          `sar-${id}`
+        )
+        .value
+    ) || 0;
+
+
+  const pkrReceived =
+    Number(
+      document
+        .getElementById(
+          `pkr-${id}`
+        )
+        .value
+    ) || 0;
+
+
+  const status =
+    document
+      .getElementById(
+        `status-${id}`
+      )
+      .value;
+
+
+  if(sarReceived < 0){
+
+    alert(
+      "سعودی ریال وصول منفی نہیں ہوسکتا۔"
+    );
+
+    return;
+  }
+
+
+  if(pkrReceived < 0){
+
+    alert(
+      "پاکستانی روپے وصول منفی نہیں ہوسکتے۔"
+    );
+
+    return;
+  }
+
+
+  if(sarReceived > sar){
+
+    alert(
+      "سعودی ریال وصول کل ریال سے زیادہ نہیں ہوسکتا۔"
+    );
+
+    return;
+  }
+
+
+  if(pkrReceived > pkr){
+
+    alert(
+      "پاکستانی روپے وصول کل رقم سے زیادہ نہیں ہوسکتے۔"
+    );
+
+    return;
+  }
+
+
+  const oldText =
+    button.textContent;
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "محفوظ ہو رہا ہے...";
+
+
+  const {
+    error
+  } =
+  await db
+    .from("orders")
+    .update({
+
+      sar_received:
+        sarReceived,
+
+      pkr_received:
+        pkrReceived,
+
+      status:
+        status
+
+    })
+    .eq(
+      "id",
+      id
+    );
+
+
+  if(error){
+
+    alert(
+      "اپڈیٹ نہیں ہوا:\n" +
+      error.message
+    );
+
+    button.disabled = false;
+
+    button.textContent =
+      oldText;
+
+    return;
+  }
+
+
+  button.textContent =
+    "✓ محفوظ";
+
+
+  await loadOrders();
+
+}
+
+
+/* ==================================================
+   STATISTICS
+================================================== */
+
+function updateStats(){
+
+  let totalSAR = 0;
+  let receivedSAR = 0;
+
+  let totalPKR = 0;
+  let receivedPKR = 0;
+
+
+  orders.forEach(order => {
+
+    /* منسوخ آرڈر حساب میں نہیں */
+
+    if(
+      order.status ===
+      "منسوخ"
+    ){
+
+      return;
+    }
+
+
+    totalSAR +=
+      Number(order.sar) || 0;
+
+
+    receivedSAR +=
+      Number(
+        order.sar_received
+      ) || 0;
+
+
+    totalPKR +=
+      Number(order.pkr) || 0;
+
+
+    receivedPKR +=
+      Number(
+        order.pkr_received
+      ) || 0;
+
+  });
+
+
+  const dueSAR =
+    Math.max(
+      0,
+      totalSAR - receivedSAR
+    );
+
+
+  const duePKR =
+    Math.max(
+      0,
+      totalPKR - receivedPKR
+    );
+
+
+  document
+    .getElementById("totalSAR")
+    .textContent =
+    formatNumber(totalSAR);
+
+
+  document
+    .getElementById("receivedSAR")
+    .textContent =
+    formatNumber(receivedSAR);
+
+
+  document
+    .getElementById("dueSAR")
+    .textContent =
+    formatNumber(dueSAR);
+
+
+  document
+    .getElementById("totalPKR")
+    .textContent =
+    formatNumber(totalPKR);
+
+
+  document
+    .getElementById("receivedPKR")
+    .textContent =
+    formatNumber(receivedPKR);
+
+
+  document
+    .getElementById("duePKR")
+    .textContent =
+    formatNumber(duePKR);
+}
+
+
+/* ==================================================
+   CSV EXPORT
+================================================== */
+
+function exportCSV(){
+
+  if(!orders.length){
+
+    alert(
+      "ایکسپورٹ کرنے کے لیے کوئی آرڈر نہیں۔"
+    );
+
+    return;
+  }
+
+
+  const rows = [
+
+    [
+      "ID",
+      "Name",
+      "Receiver",
+      "SAR",
+      "Rate",
+      "PKR",
+      "SAR Received",
+      "SAR Due",
+      "PKR Received",
+      "PKR Due",
+      "Status",
+      "Created"
+    ]
+
+  ];
+
+
+  orders.forEach(order => {
+
+    const sar =
+      Number(order.sar) || 0;
+
+
+    const pkr =
+      Number(order.pkr) || 0;
+
+
+    const sarReceived =
+      Number(
+        order.sar_received
+      ) || 0;
+
+
+    const pkrReceived =
+      Number(
+        order.pkr_received
+      ) || 0;
+
+
+    rows.push([
+
+      order.id,
+
+      order.name,
+
+      order.receiver,
+
+      sar,
+
+      order.rate,
+
+      pkr,
+
+      sarReceived,
+
+      Math.max(
+        0,
+        sar - sarReceived
+      ),
+
+      pkrReceived,
+
+      Math.max(
+        0,
+        pkr - pkrReceived
+      ),
+
+      order.status,
+
+      order.created_at
+
+    ]);
+
+  });
+
+
+  const csv =
+    rows
+      .map(row =>
+        row
+          .map(csvEscape)
+          .join(",")
+      )
+      .join("\n");
+
+
+  const blob =
+    new Blob(
+      ["\ufeff" + csv],
+      {
+        type:
+          "text/csv;charset=utf-8;"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const link =
+    document.createElement("a");
+
+
+  link.href =
+    url;
+
+
+  link.download =
+    "AbuSafwan-Exchange.csv";
+
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+}
+
+
+/* ==================================================
+   LOGOUT
+================================================== */
+
+async function logout(){
+
+  await db.auth.signOut();
+
+  currentUser = null;
+
+  orders = [];
+
+  showLogin();
+
+}
+
+
+/* ==================================================
+   HELPERS
+================================================== */
+
+function formatNumber(number){
+
+  return Number(number || 0)
+    .toLocaleString(
+      "en-US",
+      {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+      }
+    );
+}
+
+
+function csvEscape(value){
+
+  return '"' +
+    String(
+      value ?? ""
+    ).replace(
+      /"/g,
+      '""'
+    ) +
+    '"';
+}
+
+
+function escapeHtml(value){
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+}
+
+
+/* ==================================================
+   AUTH STATE
+================================================== */
+
+db.auth.onAuthStateChange(
+  async (
+    event,
+    session
+  ) => {
+
+    if(
+      event ===
+      "SIGNED_OUT"
+    ){
+
+      showLogin();
+
+      return;
+    }
+
+
+    if(
+      event ===
+      "SIGNED_IN" &&
+      session
+    ){
+
+      await checkAdmin(
+        session
+      );
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+    </html>
